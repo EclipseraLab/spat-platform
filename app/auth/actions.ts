@@ -18,7 +18,15 @@ export async function signUp(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim().toLowerCase();
   if (!email || password.length < 10 || !/^[a-z0-9_]{3,24}$/.test(username)) redirect("/signup?error=invalid-input");
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { username, display_name: username } } });
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://spat-platform.vercel.app").replace(/\\/$/, "");
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { username, display_name: username },
+      emailRedirectTo: `${siteUrl}/auth/callback?next=/dashboard`
+    }
+  });
   if (error) redirect("/signup?error=signup-failed");
   if (!data.session) redirect("/signup?notice=check-email");
   redirect("/dashboard?welcome=1");
