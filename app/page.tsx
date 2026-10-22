@@ -40,6 +40,7 @@ export default function Home() {
   const activePoints = checkedIn ? "963" : "960";
 
   function handleNav(label: string) {
+    if (label === "Daily Pulse") { window.location.assign("/daily-pulse"); return; }
     setActiveNav(label);
     setMenuOpen(false);
     if (label !== "Overview") {
