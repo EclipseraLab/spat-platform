@@ -34,6 +34,25 @@ export async function claimDailyCheckIn() {
   redirect("/dashboard?checkin=wait");
 }
 
+export async function submitWeeklyQuizAnswer(formData: FormData) {
+  const questionId = String(formData.get("question_id") ?? "");
+  const selectedOption = Number(formData.get("selected_option"));
+  if (!/^[0-9a-f-]{36}$/i.test(questionId) || !Number.isInteger(selectedOption) || selectedOption < 0 || selectedOption > 3) {
+    redirect("/daily-pulse?result=invalid");
+  }
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=/daily-pulse");
+  const { data, error } = await supabase.rpc("submit_weekly_quiz_answer", {
+    p_question_id: questionId,
+    p_selected_option: selectedOption
+  });
+  if (error) redirect("/daily-pulse?result=error");
+  const result = Array.isArray(data) ? data[0] : data;
+  if (result?.already_answered) redirect("/daily-pulse?result=already");
+  redirect(`/daily-pulse?result=${result?.correct ? "correct" : "incorrect"}&points=${Number(result?.points_awarded ?? 0)}`);
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
