@@ -18,8 +18,9 @@ export async function signUp(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim().toLowerCase();
   if (!email || password.length < 10 || !/^[a-z0-9_]{3,24}$/.test(username)) redirect("/signup?error=invalid-input");
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({ email, password, options: { data: { username, display_name: username } } });
+  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { username, display_name: username } } });
   if (error) redirect("/signup?error=signup-failed");
+  if (!data.session) redirect("/signup?notice=check-email");
   redirect("/dashboard?welcome=1");
 }
 
