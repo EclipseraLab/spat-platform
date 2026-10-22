@@ -2,12 +2,13 @@ import Link from "next/link";
 import { signUp } from "@/app/auth/actions";
 import AuthSubmitButton from "@/app/auth/auth-submit-button";
 
-export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string; notice?: string }> }) {
+  const { error, notice } = await searchParams;
   return <main className="auth-shell"><section className="auth-card">
     <Link href="/" className="auth-brand">ϟ SPAT<span>.</span></Link>
     <p className="auth-eyebrow">START YOUR JOURNEY</p><h1>Show up. Stack points.</h1>
     <p className="auth-copy">Create your account. No wallet needed.</p>
+    {notice === "check-email" && <p className="setup-status" role="status"><span />Account created. Check your email and click the confirmation link before signing in. If it is not there, check spam or junk.</p>}
     {error && <p className="auth-error" role="alert">{error === "invalid-input" ? "Use a 3–24 character username (letters, numbers, underscores) and a password of at least 10 characters." : "We couldn't create your account. Check your details and try again."}</p>}
     <form action={signUp} className="auth-form">
       <label>Username<input name="username" type="text" minLength={3} maxLength={24} pattern="[A-Za-z0-9_]+" autoComplete="username" required placeholder="your_username" /></label>
@@ -17,7 +18,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
       <AuthSubmitButton idleLabel="Create account" pendingLabel="Creating your account…" />
     </form>
     <p className="auth-switch">Already a member? <Link href="/login">Sign in</Link></p>
-    <p className="auth-note">Email confirmation behavior follows your Supabase Auth settings. Keep confirmation enabled for production.</p>
+    <p className="auth-note">If email confirmation is required, confirm your email before signing in.</p>
     <Link className="auth-back" href="/">← Back to preview</Link>
   </section></main>;
 }
