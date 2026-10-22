@@ -55,3 +55,11 @@ h1,h2,h3,p{margin-top:0}.welcome-row h1{font:600 clamp(24px,2.4vw,32px)/1.2 'Spa
 @media(max-width:560px){.auth-card{padding:26px 21px}.auth-card h1{font-size:25px}}
 
 .section-panel{min-height:65vh;padding:28px 0 48px}.section-panel h1{font:600 clamp(25px,3vw,36px)/1.2 'Space Grotesk',sans-serif;letter-spacing:-.8px;margin:16px 0 10px}.section-panel>.welcome-copy{max-width:680px;margin-bottom:26px}.section-panel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:26px}.section-panel-grid .activity-card{min-height:160px}.section-back{margin-top:24px}.section-back:hover{filter:brightness(1.08)}@media(max-width:650px){.section-panel-grid{grid-template-columns:1fr}.section-panel{padding-top:18px}}
+
+
+/* Authentication form feedback */
+.auth-form button:disabled{opacity:.78;cursor:wait;justify-content:center;gap:10px;filter:saturate(.8)}
+.auth-spinner{display:inline-block;width:14px;height:14px;border:2px solid #ffffff70;border-top-color:#fff;border-radius:50%;animation:auth-spin .7s linear infinite;flex:0 0 auto}
+.auth-field-help{margin:-8px 0 1px;color:#8292aa;font-size:10px;line-height:1.5}
+@keyframes auth-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.auth-spinner{animation-duration:1.8s}}
