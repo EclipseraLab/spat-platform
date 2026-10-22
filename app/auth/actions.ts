@@ -23,6 +23,17 @@ export async function signUp(formData: FormData) {
   redirect("/dashboard?welcome=1");
 }
 
+export async function claimDailyCheckIn() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { data, error } = await supabase.rpc("claim_daily_check_in");
+  if (error) redirect("/dashboard?checkin=error");
+  const result = Array.isArray(data) ? data[0] : data;
+  if (result?.claimed) redirect("/dashboard?checkin=success");
+  redirect("/dashboard?checkin=wait");
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
