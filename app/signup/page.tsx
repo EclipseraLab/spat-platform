@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signUp } from "@/app/auth/actions";
+import AuthSubmitButton from "@/app/auth/auth-submit-button";
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
@@ -11,8 +12,9 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
     <form action={signUp} className="auth-form">
       <label>Username<input name="username" type="text" minLength={3} maxLength={24} pattern="[A-Za-z0-9_]+" autoComplete="username" required placeholder="your_username" /></label>
       <label>Email address<input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></label>
-      <label>Password<input name="password" type="password" minLength={10} autoComplete="new-password" required placeholder="At least 10 characters" /></label>
-      <button type="submit">Create account <span>→</span></button>
+      <label>Password<input name="password" type="password" minLength={10} autoComplete="new-password" required aria-describedby="signup-password-help" placeholder="At least 10 characters" /></label>
+      <p id="signup-password-help" className="auth-field-help">Use at least 10 characters. A longer, unique password is recommended.</p>
+      <AuthSubmitButton idleLabel="Create account" pendingLabel="Creating your account…" />
     </form>
     <p className="auth-switch">Already a member? <Link href="/login">Sign in</Link></p>
     <p className="auth-note">Email confirmation behavior follows your Supabase Auth settings. Keep confirmation enabled for production.</p>
