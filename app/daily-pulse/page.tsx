@@ -20,7 +20,14 @@ export default async function DailyPulsePage({ searchParams }: QuizPageProps) {
   if (!user) redirect("/login?next=/daily-pulse");
 
   const { data, error } = await supabase.rpc("get_weekly_quiz");
-  const quiz = (Array.isArray(data) ? data : data ? [data] : []) as QuizQuestion[];
+  // get_weekly_quiz returns a JSON object shaped as { week_start, questions: [...] }.
+  // Accept the object and array forms defensively so an API response shape change
+  // cannot crash the page when we call .map() or .filter().
+  const payload = Array.isArray(data) ? data[0] : data;
+  const rawQuestions = payload && typeof payload === "object" && "questions" in payload
+    ? (payload as { questions?: unknown }).questions
+    : payload;
+  const quiz = (Array.isArray(rawQuestions) ? rawQuestions : []) as QuizQuestion[];
   const resultMessage: Record<string, string> = {
     correct: `Answer submitted. You earned ${Math.max(0, Number(params.points ?? 0))} SP.`,
     incorrect: "Answer submitted. This question is now locked until next week's set.",
