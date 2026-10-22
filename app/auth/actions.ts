@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,7 +19,7 @@ export async function signUp(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim().toLowerCase();
   if (!email || password.length < 10 || !/^[a-z0-9_]{3,24}$/.test(username)) redirect("/signup?error=invalid-input");
   const supabase = await createClient();
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://spat-platform.vercel.app").replace(/\/$/, "");
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://spat-platform.vercel.app").replace(/\\/$/, "");
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -34,12 +35,23 @@ export async function signUp(formData: FormData) {
 
 export async function claimDailyCheckIn() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) redirect("/login?next=/dashboard");
+
   const { data, error } = await supabase.rpc("claim_daily_check_in");
-  if (error) redirect("/dashboard?checkin=error");
+  if (error) {
+    console.error("Daily check-in RPC failed:", error.message);
+    redirect("/dashboard?checkin=error");
+  }
+
   const result = Array.isArray(data) ? data[0] : data;
-  if (result?.claimed) redirect("/dashboard?checkin=success");
+  if (!result || typeof result.claimed !== "boolean") {
+    console.error("Daily check-in RPC returned an unexpected result:", data);
+    redirect("/dashboard?checkin=error");
+  }
+
+  revalidatePath("/dashboard");
+  if (result.claimed) redirect("/dashboard?checkin=success");
   redirect("/dashboard?checkin=wait");
 }
 
