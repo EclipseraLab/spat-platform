@@ -91,6 +91,30 @@ export default function Home() {
 
         <div className="content">
           {notice && <div className="notice-banner"><CircleHelp size={17} /><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Dismiss notice"><X size={16} /></button></div>}
+          {activeNav !== "Overview" ? (
+            <section className="section-panel">
+              <div className="eyebrow"><span className="eyebrow-line" /> SPAT SPACE / {activeNav.toUpperCase()}</div>
+              <h1>{activeNav === "Daily Pulse" ? "Your weekly crypto pulse." : activeNav === "Missions" ? "Your mission board." : activeNav === "Weekly League" ? "Weekly competition." : activeNav === "Community" ? "Community space." : "SPAT Games."}</h1>
+              <p className="welcome-copy">{activeNav === "Daily Pulse" ? "Answer five crypto questions each week. Your set is assigned for this week when your member account is connected." : activeNav === "Missions" ? "Complete activities and submit eligible social tasks for review. Rewards are not issued until verified." : activeNav === "Weekly League" ? "Your league rank will be calculated from verified SP earnings once live member data is connected." : activeNav === "Community" ? "Community events and participation opportunities will appear here when published by the SPAT team." : "SPAT Blocks, SPAT Bounce, and SPAT Strike are planned for a later phase."}</p>
+              <div className="section-panel-grid">
+                {activeNav === "Daily Pulse" ? <>
+                  <article className="activity-card"><div className="activity-icon activity-icon-1"><Brain size={19} /></div><h3>Weekly crypto quiz</h3><p>5 questions · up to 50 SP · new set each week.</p><span className="points-pill">Quiz connection in progress</span></article>
+                  <article className="activity-card"><div className="activity-icon activity-icon-0"><CalendarDays size={19} /></div><h3>One set per week</h3><p>Question order can differ by member. Questions should not repeat for the same member within the week.</p></article>
+                </> : activeNav === "Missions" ? <>
+                  {tasks.map(({title,detail,points,icon:Icon})=><article className="activity-card" key={title}><div className="activity-icon"><Icon size={19}/></div><div className="activity-title-row"><h3>{title}</h3><span className="points-pill">{points}</span></div><p>{detail}</p><button className="activity-action" onClick={()=>setNotice("This activity is in preview mode. Real submissions and verified rewards are still being connected.")}>View task <ArrowRight size={14}/></button></article>)}
+                </> : activeNav === "Weekly League" ? <>
+                  {league.map(person=><article className="activity-card" key={person.rank}><div className="activity-title-row"><h3>#{person.rank} {person.name}</h3><span className="points-pill">{person.points} SP</span></div><p>{person.handle} · demonstration leaderboard</p></article>)}
+                </> : activeNav === "Community" ? <>
+                  <article className="activity-card"><div className="activity-icon"><Users size={19}/></div><h3>Community events</h3><p>Events will be listed here when published. Participation rewards require review.</p></article>
+                  <article className="activity-card"><div className="activity-icon"><MessageCircle size={19}/></div><h3>Social tasks</h3><p>Follow, like, repost, join community channels, or submit a post for approval.</p></article>
+                </> : <>
+                  {["SPAT Blocks","SPAT Bounce","SPAT Strike"].map(name=><article className="activity-card" key={name}><div className="activity-icon"><Gamepad2 size={19}/></div><h3>{name}</h3><p>Planned game. Game Points will be separate from SPAT Points.</p><span className="points-pill">Coming later</span></article>)}
+                </>}
+              </div>
+              <button className="primary-button section-back" onClick={()=>{setActiveNav("Overview");setNotice("");}}>← Back to Overview</button>
+            </section>
+          ) : (
+          <>
           <section className="welcome-row">
             <div>
               <div className="eyebrow"><span className="eyebrow-line" /> WEDNESDAY, YOUR NEXT MOVE STARTS HERE</div>
@@ -200,6 +224,8 @@ export default function Home() {
           </section>
 
           <footer className="footer"><span>© 2026 SPAT PROTOCOL <i>·</i> BUILT FOR THE EVERYDAY PARTICIPANT</span><span><span className="status-dot" /> SYSTEM PREVIEW <i>·</i> <button onClick={() => setNotice("SPAT is an early product preview. Balances, rankings, streaks, and missions shown here are sample values, not real rewards.")}>About this preview</button></span></footer>
+          </>
+          )}
         </div>
       </section>
     </main>
