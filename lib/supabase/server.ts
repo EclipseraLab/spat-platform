@@ -9,7 +9,7 @@ export async function createClient() {
   return createServerClient(url, key, {
     cookies: {
       getAll: () => cookieStore.getAll(),
-      setAll: (items) => {
+      setAll: (items: { name: string; value: string; options: any }[]) => {
         try { items.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); }
         catch { /* Server components may not write cookies; middleware refreshes sessions. */ }
       }
