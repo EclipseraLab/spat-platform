@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signIn } from "@/app/auth/actions";
+import AuthSubmitButton from "@/app/auth/auth-submit-button";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
@@ -11,7 +12,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <form action={signIn} className="auth-form">
       <label>Email address<input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></label>
       <label>Password<input name="password" type="password" autoComplete="current-password" required placeholder="Your password" /></label>
-      <button type="submit">Sign in <span>→</span></button>
+      <AuthSubmitButton idleLabel="Sign in" pendingLabel="Signing you in…" />
     </form>
     <p className="auth-switch">New to SPAT? <Link href="/signup">Create an account</Link></p><Link className="auth-back" href="/">← Back to preview</Link>
   </section></main>;
