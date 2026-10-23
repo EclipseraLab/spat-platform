@@ -74,6 +74,26 @@ export async function submitWeeklyQuizAnswer(formData: FormData) {
   redirect(`/daily-pulse?result=${result?.correct ? "correct" : "incorrect"}&points=${Number(result?.points_awarded ?? 0)}`);
 }
 
+export async function claimDailyMission(formData: FormData) {
+  const missionKey = String(formData.get("mission_key") ?? "");
+  if (!["profile_complete", "daily_check_in", "weekly_quiz"].includes(missionKey)) {
+    redirect("/missions?result=invalid");
+  }
+  const supabase = await createClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) redirect("/login?next=/missions");
+  const { data, error } = await supabase.rpc("claim_daily_mission", { p_mission_key: missionKey });
+  if (error) {
+    console.error("Daily mission claim failed:", error.message);
+    redirect("/missions?result=error");
+  }
+  const result = Array.isArray(data) ? data[0] : data;
+  revalidatePath("/missions");
+  revalidatePath("/dashboard");
+  if (result?.success) redirect("/missions?result=claimed&points=" + Number(result.points_awarded ?? 0));
+  redirect("/missions?result=" + String(result?.reason ?? "error"));
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
