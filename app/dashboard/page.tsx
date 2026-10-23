@@ -84,7 +84,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           : <div className="checkin-complete">✓ Available again in 24 hours</div>}
       </section>
 
-      <nav className="dashboard-footer"><Link href="/missions" className="dashboard-link">Daily Missions →</Link><Link href="/daily-pulse" className="dashboard-link">Daily Pulse →</Link></nav>
+      <nav className="dashboard-footer"><Link href="/missions" className="dashboard-link">Daily Missions →</Link><Link href="/social-tasks" className="dashboard-link">Social Tasks →</Link><Link href="/daily-pulse" className="dashboard-link">Daily Pulse →</Link></nav>
 
       <footer className="dashboard-footer">
         <Link href="/" className="dashboard-link">← Return to SPAT overview</Link>
