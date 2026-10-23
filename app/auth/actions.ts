@@ -94,6 +94,29 @@ export async function claimDailyMission(formData: FormData) {
   redirect("/missions?result=" + String(result?.reason ?? "error"));
 }
 
+export async function submitSocialTask(formData: FormData) {
+  const taskId = String(formData.get("task_id") ?? "");
+  const proofUrl = String(formData.get("proof_url") ?? "").trim();
+  if (!/^[a-z0-9_]{3,40}$/.test(taskId) || !/^https?:\/\//i.test(proofUrl) || proofUrl.length > 2048) {
+    redirect("/social-tasks?result=invalid_url");
+  }
+  const supabase = await createClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) redirect("/login?next=/social-tasks");
+  const { data, error } = await supabase.rpc("submit_social_task", {
+    p_task_id: taskId,
+    p_proof_url: proofUrl
+  });
+  if (error) {
+    console.error("Social task submission failed:", error.message);
+    redirect("/social-tasks?result=error");
+  }
+  const result = Array.isArray(data) ? data[0] : data;
+  revalidatePath("/social-tasks");
+  if (result?.success) redirect("/social-tasks?result=submitted");
+  redirect("/social-tasks?result=" + String(result?.reason ?? "error"));
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
