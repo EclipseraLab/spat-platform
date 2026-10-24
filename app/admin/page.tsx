@@ -31,7 +31,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     {params.result && <p className={["saved","approved","rejected"].includes(params.result) ? "dashboard-notice dashboard-notice--success" : "dashboard-notice dashboard-notice--error"} role="status">{messages[params.result] ?? "Action status updated."}</p>}
     <nav style={{display:"flex",gap:10,borderBottom:"1px solid #263248",paddingBottom:16,marginBottom:22}}>
       <Link className="secondary-button" style={{width:"auto",textDecoration:"none",background:tab==="tasks"?"#1b3150":"#151e2d"}} href="/admin?tab=tasks">Social task manager ({taskList.length})</Link>
-      <Link className="secondary-button" style={{width:"auto",textDecoration:"none",background:tab==="reviews"?"#1b3150":"#151e2d"}} href="/admin?tab=reviews">Pending reviews ({pending.length})</Link>
+      <Link className="secondary-button" style={{width:"auto",textDecoration:"none",background:tab==="reviews"?"#1b3150":"#151e2d"}} href="/admin?tab=reviews">Pending reviews ({pending.length})</Link><Link className="secondary-button" style={{width:"auto",textDecoration:"none"}} href="/admin/quests">Quest manager</Link>
     </nav>
     {tab === "tasks" ? <>
       <h2 style={{fontSize:18,marginBottom:14}}>Create or update a social task</h2>
