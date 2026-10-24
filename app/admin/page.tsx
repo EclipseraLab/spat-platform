@@ -4,24 +4,27 @@ import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/auth/actions";
 import { reviewSocialSubmission, saveSocialTask } from "@/app/admin/actions";
 
+import { saveMission } from "@/app/admin/quests/actions";
+
+type Mission = { id: string; title: string; description: string; reward_sp: number; active: boolean; created_at: string };
 type Task = { id: string; title: string; description: string; reward_sp: number; active: boolean; created_at: string };
 type Submission = { id: string; user_id: string; username: string | null; task_id: string; task_title: string; reward_sp: number; proof_url: string; status: string; points_awarded: number; created_at: string };
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ tab?: string; result?: string }> }) {
   const params = await searchParams;
-  const tab = params.tab === "reviews" ? "reviews" : "tasks";
+  const tab = params.tab === "reviews" ? "reviews" : params.tab === "quests" ? "quests" : "tasks";
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/admin");
   const { data: admin, error: adminError } = await supabase.from("spat_admins").select("role").eq("user_id", user.id).maybeSingle();
   if (adminError || !admin) redirect("/dashboard?notice=admin-only");
 
-  const [{ data: tasks }, { data: submissions }] = await Promise.all([
+  const [{ data: tasks }, { data: submissions }, { data: missions }] = await Promise.all([
     supabase.from("social_tasks").select("id,title,description,reward_sp,active,created_at").order("created_at", { ascending: false }),
     supabase.rpc("spat_admin_list_submissions", { p_status: "pending" })
   ]);
   const pending: Submission[] = Array.isArray(submissions) ? submissions : [];
-  const taskList: Task[] = Array.isArray(tasks) ? tasks as Task[] : [];
+  const taskList: Task[] = Array.isArray(tasks) ? tasks as Task[] : [];\n  const missionList: Mission[] = Array.isArray(missions) ? missions as Mission[] : [];
   const messages: Record<string,string> = { saved: "Task saved.", approved: "Submission approved and points awarded.", rejected: "Submission rejected.", already_reviewed: "This submission was already reviewed.", invalid: "Check the submitted fields and try again.", error: "The action could not be completed. Check logs and try again." };
 
   return <main className="auth-shell"><section className="auth-card pulse-card" style={{width:"min(100%,900px)"}}>
@@ -31,9 +34,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     {params.result && <p className={["saved","approved","rejected"].includes(params.result) ? "dashboard-notice dashboard-notice--success" : "dashboard-notice dashboard-notice--error"} role="status">{messages[params.result] ?? "Action status updated."}</p>}
     <nav style={{display:"flex",gap:10,borderBottom:"1px solid #263248",paddingBottom:16,marginBottom:22}}>
       <Link className="secondary-button" style={{width:"auto",textDecoration:"none",background:tab==="tasks"?"#1b3150":"#151e2d"}} href="/admin?tab=tasks">Social task manager ({taskList.length})</Link>
-      <Link className="secondary-button" style={{width:"auto",textDecoration:"none",background:tab==="reviews"?"#1b3150":"#151e2d"}} href="/admin?tab=reviews">Pending reviews ({pending.length})</Link><Link className="secondary-button" style={{width:"auto",textDecoration:"none"}} href="/admin/quests">Quest manager</Link>
+      <Link className="secondary-button" style={{width:"auto",textDecoration:"none",background:tab==="reviews"?"#1b3150":"#151e2d"}} href="/admin?tab=reviews">Pending reviews ({pending.length})</Link><Link className="secondary-button" style={{width:"auto",textDecoration:"none",background:tab==="quests"?"#1b3150":"#151e2d"}} href="/admin?tab=quests">Quest manager ({missionList.length})</Link>
     </nav>
-    {tab === "tasks" ? <>
+    {tab === "quests" ? <><h2 style={{fontSize:18,marginBottom:14}}>Create a quest</h2><form action={saveMission} className="auth-form" style={{border:"1px solid #263248",borderRadius:10,padding:16,marginBottom:25}}><label>Quest title<input name="title" required minLength={2} maxLength={120}/></label><label>Instructions<textarea name="description" maxLength={2000} rows={3}/></label><label>Reward (SP)<input name="reward_sp" type="number" min={0} max={10000} defaultValue={5} required/></label><label style={{display:"flex",alignItems:"center",gap:8}}><input name="active" type="checkbox" defaultChecked style={{width:16}}/> Publish quest on the site</label><button className="auth-submit" type="submit">Publish quest</button></form><h2 style={{fontSize:18,marginBottom:14}}>Existing quests</h2>{missionList.length===0 && <p className="auth-copy">No quests found.</p>}<div style={{display:"grid",gap:12}}>{missionList.map(m=><article key={m.id} className="pulse-question"><div className="pulse-question-head"><span>{m.active?"PUBLISHED":"UNPUBLISHED"}</span><span className="pulse-answered">+{m.reward_sp} SP</span></div><h2>{m.title}</h2><p className="auth-copy">{m.description}</p><details><summary style={{cursor:"pointer",color:"#9fc3ff"}}>Edit quest</summary><form action={saveMission} className="auth-form" style={{marginTop:12}}><input type="hidden" name="id" value={m.id}/><label>Title<input name="title" defaultValue={m.title} required minLength={2} maxLength={120}/></label><label>Instructions<textarea name="description" rows={3} maxLength={2000} defaultValue={m.description}/></label><label>Reward (SP)<input name="reward_sp" type="number" min={0} max={10000} defaultValue={m.reward_sp} required/></label><label style={{display:"flex",alignItems:"center",gap:8}}><input type="checkbox" name="active" defaultChecked={m.active} style={{width:16}}/> Published</label><button className="auth-submit" type="submit">Save changes</button></form></details></article>)}</div></> : tab === "tasks" ? <>
       <h2 style={{fontSize:18,marginBottom:14}}>Create or update a social task</h2>
       <form action={saveSocialTask} className="auth-form" style={{border:"1px solid #263248",borderRadius:10,padding:16,marginBottom:25}}>
         <label>Task ID (lowercase, use underscores)<input name="id" required minLength={3} maxLength={40} pattern="[a-z0-9_]+" placeholder="e.g. follow_x_new" /></label>
