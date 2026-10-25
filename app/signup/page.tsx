@@ -2,10 +2,11 @@ import Link from "next/link";
 import { signUp } from "@/app/auth/actions";
 import AuthSubmitButton from "@/app/auth/auth-submit-button";
 import Turnstile from "@/app/auth/turnstile";
+import AuthSessionRedirect from "@/app/auth/auth-session-redirect";
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string; notice?: string }> }) {
   const { error, notice } = await searchParams;
-  return <main className="auth-shell"><section className="auth-card">
+  return <main className="auth-shell"><AuthSessionRedirect /><section className="auth-card">
     <Link href="/" className="auth-brand">ϟ SPAT<span>.</span></Link>
     <p className="auth-eyebrow">START YOUR JOURNEY</p><h1>Show up. Stack points.</h1>
     <p className="auth-copy">Create your account. No wallet needed.</p>
