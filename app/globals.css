@@ -186,7 +186,7 @@ h1,h2,h3,p{margin-top:0}.welcome-row h1{font:600 clamp(24px,2.4vw,32px)/1.2 'Spa
 .landing-steps p,.landing-feature p{color:#8f9db0;font-size:11px;line-height:1.75;margin:0}
 .landing-step-foot{display:flex;align-items:center;gap:7px;margin-top:23px;color:#8bdcc5;font:9px 'DM Mono',monospace;letter-spacing:.7px}
 .landing-activities{max-width:none;padding:85px max(35px,calc((100vw - 1130px)/2)) 100px;background:#0a0f17;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.landing-section-heading{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:34px}
+.landing-section-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:34px}
 .landing-section-heading h2{margin-bottom:0}
 .landing-section-heading>p{max-width:340px;margin-bottom:5px}
 .landing-activity-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
