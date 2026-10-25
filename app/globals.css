@@ -272,7 +272,7 @@ h1,h2,h3,p{margin-top:0}.welcome-row h1{font:600 clamp(24px,2.4vw,32px)/1.2 'Spa
 .games-game-modal{position:fixed;z-index:1000;left:50%;top:50%;transform:translate(-50%,-50%);width:85vw;height:82vh;max-width:1440px;max-height:920px;overflow:auto;padding:clamp(18px,3vw,42px);border:1px solid rgba(105,165,255,.28);border-radius:24px;background:radial-gradient(ellipse at top right,rgba(36,82,145,.24),transparent 55%),#07101f;box-shadow:0 30px 120px rgba(0,0,0,.78);}
 .games-game-modal:before{content:"";position:fixed;z-index:-1;inset:-100vh -100vw;background:rgba(2,6,15,.78);backdrop-filter:blur(8px);pointer-events:none;}
 .games-game-modal .games-active{min-height:45vh;display:flex;flex-direction:column;justify-content:center;gap:20px;}
-.games-select-grid--nine{grid-template-columns:repeat(3,minmax(0,1fr));}
+.games-select-grid--games{grid-template-columns:repeat(3,minmax(0,1fr));}
 .games-difficulty{display:flex;gap:10px;margin:12px 0 20px;}
 .games-difficulty button,.games-secondary-button{border:1px solid rgba(132,168,220,.35);border-radius:12px;background:#101c30;color:#dce8ff;padding:12px 20px;cursor:pointer;}
 .games-difficulty button.active{border-color:#6baaff;background:rgba(66,135,255,.2);box-shadow:0 0 0 1px rgba(90,160,255,.25);}
@@ -297,5 +297,5 @@ h1,h2,h3,p{margin-top:0}.welcome-row h1{font:600 clamp(24px,2.4vw,32px)/1.2 'Spa
 .games-battle{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;padding:36px;font-size:20px;}.games-battle strong{display:block;font-size:30px;color:#f2c76e;}
 .games-results{padding:24px;border:1px solid rgba(105,165,255,.2);border-radius:16px;background:#0b1728;}
 .games-game-modal .games-score-row{margin-top:18px;}
-@media(max-width:700px){.games-game-modal{width:92vw;height:88vh;padding:16px;border-radius:16px;}.games-select-grid--nine{grid-template-columns:repeat(2,minmax(0,1fr));}.games-tetris-board{grid-template-columns:repeat(10,12px);}.games-tetris-board span{width:12px;height:12px;}.games-play-head{gap:12px;}.games-battle{padding:14px;}}
-@media(min-width:701px) and (max-width:1000px){.games-game-modal{width:88vw;height:85vh;}.games-select-grid--nine{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:700px){.games-game-modal{width:92vw;height:88vh;padding:16px;border-radius:16px;}.games-select-grid--games{grid-template-columns:repeat(2,minmax(0,1fr));}.games-tetris-board{grid-template-columns:repeat(10,12px);}.games-tetris-board span{width:12px;height:12px;}.games-play-head{gap:12px;}.games-battle{padding:14px;}}
+@media(min-width:701px) and (max-width:1000px){.games-game-modal{width:88vw;height:85vh;}.games-select-grid--games{grid-template-columns:repeat(3,minmax(0,1fr));}}
