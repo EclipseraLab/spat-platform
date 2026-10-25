@@ -1,141 +1,66 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-
-type GameKey = "spat_blocks" | "spat_bounce" | "spat_strike";
-const gameInfo: Record<GameKey, { title: string; tagline: string; instructions: string; icon: string; accent: string }> = {
-  spat_blocks: { title: "SPAT Blocks", tagline: "STACK THE GRID", instructions: "Tap the blocks as they light up. Each hit adds 10 points. You have 30 seconds.", icon: "▦", accent: "gold" },
-  spat_bounce: { title: "SPAT Bounce", tagline: "KEEP IT IN PLAY", instructions: "Tap to bounce the orb. Time your taps while the pulse is in the scoring zone.", icon: "◉", accent: "blue" },
-  spat_strike: { title: "SPAT Strike", tagline: "HIT THE TARGET", instructions: "Wait for the target to appear, then hit it quickly. Each accurate strike adds 25 points.", icon: "✳", accent: "violet" }
-};
-
-export default function SpatGamesClient({ initialGp, initialWeeklyGp }: { initialGp: number; initialWeeklyGp: number }) {
-  const [game, setGame] = useState<GameKey>("spat_blocks");
-  const [playing, setPlaying] = useState(false);
-  const [seconds, setSeconds] = useState(30);
-  const [score, setScore] = useState(0);
-  const [target, setTarget] = useState(4);
-  const [pulse, setPulse] = useState(0);
-  const [message, setMessage] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [gp, setGp] = useState(initialGp);
-  const [weeklyGp, setWeeklyGp] = useState(initialWeeklyGp);
-  const [runId, setRunId] = useState("");
-  const [strikeReadyAt, setStrikeReadyAt] = useState(0);
-  const [reaction, setReaction] = useState<number | null>(null);
-  const startedAt = useRef(0);
-
-  useEffect(() => {
-    if (!playing) return;
-    const timer = window.setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startedAt.current) / 1000);
-      setSeconds(Math.max(0, 30 - elapsed));
-      setPulse((v) => (v + 1) % 100);
-      if (elapsed >= 30) setPlaying(false);
-    }, 100);
-    return () => window.clearInterval(timer);
-  }, [playing]);
-
-  useEffect(() => {
-    if (!playing || game !== "spat_strike") return;
-    const delay = 700 + Math.floor(Math.random() * 1800);
-    const timeout = window.setTimeout(() => setStrikeReadyAt(Date.now()), delay);
-    return () => window.clearTimeout(timeout);
-  }, [playing, game, score]);
-
-  function startGame(nextGame = game) {
-    setGame(nextGame);
-    setScore(0);
-    setSeconds(30);
-    setTarget(Math.floor(Math.random() * 9));
-    setPulse(0);
-    setReaction(null);
-    setStrikeReadyAt(0);
-    setMessage("");
-    setRunId(crypto.randomUUID());
-    startedAt.current = Date.now();
-    setPlaying(true);
-  }
-
-  function hitBlocks(index: number) {
-    if (!playing || game !== "spat_blocks") return;
-    setTarget(Math.floor(Math.random() * 9));
-    setScore((s) => s + (index === target ? 10 : 2));
-  }
-
-  function bounce() {
-    if (!playing || game !== "spat_bounce") return;
-    const timing = pulse % 20;
-    const points = timing >= 7 && timing <= 12 ? 15 : 5;
-    setScore((s) => s + points);
-    setMessage(points === 15 ? "Perfect timing +15" : "+5 — time your tap with the blue pulse");
-  }
-
-  function strike() {
-    if (!playing || game !== "spat_strike") return;
-    if (!strikeReadyAt) {
-      setMessage("Too early — wait for the target to light up.");
-      setScore((s) => Math.max(0, s - 5));
-      return;
-    }
-    const ms = Date.now() - strikeReadyAt;
-    setReaction(ms);
-    setStrikeReadyAt(0);
-    setScore((s) => s + (ms < 450 ? 25 : ms < 800 ? 15 : 8));
-    setMessage(ms < 450 ? "Lightning strike!" : "Good hit!");
-  }
-
-  async function claimScore() {
-    setBusy(true);
-    setMessage("");
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase.rpc("submit_game_score", {
-        p_game_key: game,
-        p_score: Math.min(2500, Math.max(0, score)),
-        p_idempotency_key: runId || crypto.randomUUID()
-      });
-      if (error) throw error;
-      const result = Array.isArray(data) ? data[0] : data;
-      if (!result?.success) throw new Error("Score could not be saved.");
-      setGp(Number(result.gp_balance ?? gp));
-      setWeeklyGp(Number(result.weekly_gp_earned ?? weeklyGp));
-      setMessage(result.reason === "weekly_cap_reached"
-        ? `Run saved. You earned ${result.gp_awarded} GP; the weekly cap has been reached.`
-        : `Run saved! +${result.gp_awarded} GP added to your balance.`);
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Could not save this run. Please try again.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const info = gameInfo[game];
-  const progress = Math.min(100, weeklyGp / 10000 * 100);
-  return <div className="games-layout">
-    <section className="games-hero">
-      <div className="games-hero-copy"><p className="games-eyebrow">SPAT ARCADE / PLAYER ZONE</p><h1>Play the game.<br/><span>Build your score.</span></h1><p>Three quick skill games. Earn Game Points (GP) for each completed run, with a shared weekly limit of 10,000 GP.</p><div className="games-hero-pills"><span>● AUTHENTICATED PLAY</span><span>↗ SCORES SAVED TO YOUR ACCOUNT</span></div></div>
-      <div className="games-orbit" aria-hidden="true"><div className="games-orbit-ring ring-a"/><div className="games-orbit-ring ring-b"/><div className="games-orbit-core">ϟ</div><span className="games-orbit-label">PLAY / EARN / REPEAT</span></div>
-    </section>
-    <section className="games-wallet-row">
-      <article className="games-wallet-card"><span>YOUR GAME POINTS</span><strong>{gp.toLocaleString("en-US")} <small>GP</small></strong><p>Current account balance</p></article>
-      <article className="games-wallet-card games-wallet-card--weekly"><div className="games-wallet-top"><span>WEEKLY GP CAP</span><b>{weeklyGp.toLocaleString("en-US")} / 10,000</b></div><div className="games-progress"><span style={{width: `${progress}%`}}/></div><p>{Math.max(0, 10000 - weeklyGp).toLocaleString("en-US")} GP remaining this week</p></article>
-    </section>
-    <section className="games-section">
-      <div className="games-section-heading"><div><p className="games-eyebrow">CHOOSE YOUR CHALLENGE</p><h2>The arcade<span>.</span></h2></div><span className="games-live-tag"><i/> 3 GAMES AVAILABLE</span></div>
-      <div className="games-select-grid">{(Object.keys(gameInfo) as GameKey[]).map((key, i) => <button key={key} className={`games-select-card ${game === key ? "selected" : ""} ${gameInfo[key].accent}`} onClick={() => { setPlaying(false); setGame(key); setScore(0); setSeconds(30); setMessage(""); }}><span className="games-select-number">0{i + 1}</span><span className="games-select-icon">{gameInfo[key].icon}</span><strong>{gameInfo[key].title}</strong><small>{gameInfo[key].tagline}</small><span className="games-select-arrow">↗</span></button>)}</div>
-    </section>
-    <section className={`games-play-panel ${info.accent}`}>
-      <div className="games-play-head"><div><p className="games-eyebrow">{info.tagline}</p><h2>{info.title}</h2><p>{info.instructions}</p></div><div className="games-timer"><small>TIME LEFT</small><strong>00:{String(seconds).padStart(2,"0")}</strong></div></div>
-      {game === "spat_blocks" && <div className="blocks-grid" aria-label="Tap the highlighted block grid">{Array.from({length:9},(_,i)=><button aria-label={`Block ${i+1}`} key={i} disabled={!playing} onClick={()=>hitBlocks(i)} className={i===target?"lit":""}>{i===target?"✦":""}</button>)}</div>}
-      {game === "spat_bounce" && <button disabled={!playing} className="bounce-field" onClick={bounce}><span className="bounce-zone"/><span className="bounce-orb" style={{left:`${8 + (pulse % 20) * 4.2}%`}}/><strong>TAP TO BOUNCE</strong><small>Best timing scores more</small></button>}
-      {game === "spat_strike" && <button disabled={!playing} className={`strike-field ${strikeReadyAt?"strike-ready":""}`} onClick={strike}><span>{strikeReadyAt?"✹":"＋"}</span><strong>{strikeReadyAt?"STRIKE NOW":"WAIT FOR THE TARGET"}</strong><small>{reaction !== null ? `Last reaction: ${reaction} ms` : "React as quickly as you can"}</small></button>}
-      <div className="games-score-row"><div><small>YOUR SCORE</small><strong>{score.toLocaleString("en-US")}</strong></div><div><small>ESTIMATED GP</small><strong>{Math.min(score, Math.max(0,10000-weeklyGp)).toLocaleString("en-US")} <em>GP</em></strong></div>{!playing ? <button className="games-start-button" onClick={()=>startGame(game)}>{seconds===0?"Play again":"Start 30-sec run"} <span>→</span></button> : <span className="games-playing-label"><i/> RUN IN PROGRESS</span>}</div>
-      {!playing && seconds===0 && <div className="games-finish"><p>Run complete. Submit your score to save your GP.</p><button disabled={busy} onClick={claimScore}>{busy?"Saving score…":"Save score & claim GP"} <span>→</span></button></div>}
-      {message && <p className="games-message" role="status">{message}</p>}
-      <p className="games-integrity-note">Scores are submitted to the SPAT server. A run can be submitted only once, and GP rewards stop at the shared weekly cap.</p>
-    </section>
-    <p className="games-rules-note"><strong>How GP works:</strong> Earn GP by playing. The shared limit is 10,000 GP per week across SPAT Blocks, SPAT Bounce, and SPAT Strike. GP carries forward; 1,000 GP converts to 1 SP under the SPAT points rules.</p>
-  </div>;
+type GameId = "minesweeper" | "cards" | "trivia" | "2048" | "flappy" | "tetris" | "arena" | "match3" | "runner";
+type Difficulty = "Easy" | "Medium" | "Hard";
+const games: {id:GameId;name:string;tag:string;description:string;icon:string;instructions:string;backendKey:string}[] = [
+{id:"minesweeper",name:"Minesweeper",tag:"AVOID THE RUG PULL",description:"Reveal safe tiles and avoid hidden rugs.",icon:"▦",instructions:"Reveal safe squares. A rug ends the round; every safe square earns points.",backendKey:"spat_blocks"},
+{id:"cards",name:"Card Battler",tag:"BUILD YOUR DECK",description:"Play attack cards against an arena rival.",icon:"♜",instructions:"Play cards to reduce the rival’s health before the timer ends. This version is a solo rival challenge, not live PvP.",backendKey:"spat_strike"},
+{id:"trivia",name:"Crypto Trivia",tag:"BEAT THE CLOCK",description:"Crypto knowledge, under pressure.",icon:"◈",instructions:"Answer each question before time runs out. Correct answers add to your score.",backendKey:"spat_bounce"},
+{id:"2048",name:"2048",tag:"MERGE THE NUMBERS",description:"Slide matching tiles to reach 2048.",icon:"2⁴",instructions:"Use arrow buttons or keyboard arrows. Matching tiles merge; reach 2048 for a bonus.",backendKey:"spat_blocks"},
+{id:"flappy",name:"Flappy Flight",tag:"TAP TO FLY",description:"Fly through gaps without hitting barriers.",icon:"↗",instructions:"Tap FLAP to fly through the gaps. A collision ends the round.",backendKey:"spat_bounce"},
+{id:"tetris",name:"Tetris Blocks",tag:"FIT THE BLOCKS",description:"Move falling blocks and clear rows.",icon:"▤",instructions:"Move the piece left/right and drop it. This compact arcade version focuses on placement and row-clear scoring.",backendKey:"spat_blocks"},
+{id:"arena",name:"Arena Royale",tag:"LAST ONE STANDING",description:"Survive a quick arena challenge.",icon:"⚔",instructions:"Collect energy and avoid bot attacks. This is a single-player prototype, not live multiplayer.",backendKey:"spat_strike"},
+{id:"match3",name:"Match-3",tag:"MATCH THE TILES",description:"Swap adjacent tiles to make matches.",icon:"◆",instructions:"Select two adjacent tiles. Matches of three or more score points.",backendKey:"spat_blocks"},
+{id:"runner",name:"Endless Runner",tag:"DODGE. SURVIVE. REPEAT.",description:"Jump over obstacles and chase your best score.",icon:"➜",instructions:"Tap JUMP to clear obstacles. Each successful dodge adds points. A live weekly leaderboard requires server-side leaderboard support.",backendKey:"spat_bounce"}
+];
+const questions = [
+{q:"What does DYOR mean?",a:["Do Your Own Research","Deposit Your Own Returns","Direct Yield On Reserve","Decentralized Yearly Operating Rate"],c:0},
+{q:"What is a rug pull?",a:["A project abandoning investors after taking funds","A normal chain upgrade","A wallet backup","A token split"],c:0},
+{q:"What does TVL mean in DeFi?",a:["Total Value Locked","Token Verification Limit","Trade Volume Ledger","Trusted Validator Link"],c:0},
+{q:"What is a seed phrase for?",a:["Recovering wallet access","Paying every gas fee","Changing token supply","Verifying an NFT image"],c:0},
+{q:"What is a blockchain validator involved in?",a:["Verifying transactions or blocks","Setting every token price","Designing logos","Recovering passwords"],c:0}
+];
+function newBoard(){const b=Array(16).fill(0); addTile(b);addTile(b);return b;}
+function addTile(b:number[]){const e=b.map((v,i)=>v===0?i:-1).filter(i=>i>=0);if(e.length)b[e[Math.floor(Math.random()*e.length)]]=Math.random()<.9?2:4;}
+function slide(board:number[],dir:string){const n=[...board];for(let line=0;line<4;line++){const ids:number[]=[];for(let p=0;p<4;p++)ids.push(dir==="left"?line*4+p:dir==="right"?line*4+3-p:dir==="up"?p*4+line:(3-p)*4+line);const vals=ids.map(i=>n[i]).filter(Boolean);const out:number[]=[];for(let i=0;i<vals.length;i++){if(vals[i]===vals[i+1]){out.push(vals[i]*2);i++;}else out.push(vals[i]);}ids.forEach((id,i)=>n[id]=out[i]||0);}if(n.some((v,i)=>v!==board[i]))addTile(n);return n;}
+export default function SpatGamesClient({initialGp,initialWeeklyGp}:{initialGp:number;initialWeeklyGp:number}) {
+const [game,setGame]=useState<GameId>("minesweeper"),[difficulty,setDifficulty]=useState<Difficulty>("Medium"),[stage,setStage]=useState<"instructions"|"playing"|"results">("instructions");
+const [score,setScore]=useState(0),[seconds,setSeconds]=useState(45),[gp,setGp]=useState(initialGp),[weeklyGp,setWeeklyGp]=useState(initialWeeklyGp),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[runId,setRunId]=useState("");
+const [mines,setMines]=useState<number[]>([]),[revealed,setRevealed]=useState<number[]>([]),[health,setHealth]=useState(20),[rival,setRival]=useState(20),[turn,setTurn]=useState(0),[question,setQuestion]=useState(0),[board,setBoard]=useState<number[]>(newBoard()),[flight,setFlight]=useState(0),[jump,setJump]=useState(false),[arenaHealth,setArenaHealth]=useState(3),[tiles,setTiles]=useState<string[]>([]),[first,setFirst]=useState<number|null>(null),[block,setBlock]=useState(4);
+const started=useRef(0); const info=games.find(g=>g.id===game)!;
+useEffect(()=>{if(stage!=="playing")return;const timer=window.setInterval(()=>{const left=Math.max(0,45-Math.floor((Date.now()-started.current)/1000));setSeconds(left);if(left===0)setStage("results");},200);return()=>window.clearInterval(timer)},[stage]);
+useEffect(()=>{if(stage!=="playing"||!["flappy","runner","arena"].includes(game))return;const t=window.setInterval(()=>setFlight(v=>v+1),900);return()=>window.clearInterval(t)},[stage,game]);
+useEffect(()=>{if(stage!=="playing"||game!=="2048")return;const handler=(e:KeyboardEvent)=>{const m:Record<string,string>={ArrowLeft:"left",ArrowRight:"right",ArrowUp:"up",ArrowDown:"down"};if(m[e.key]){e.preventDefault();move2048(m[e.key]);}};window.addEventListener("keydown",handler);return()=>window.removeEventListener("keydown",handler)},[stage,game]);
+function begin(){setScore(0);setSeconds(45);setMessage("");setRunId(crypto.randomUUID());started.current=Date.now();setRevealed([]);setMines(Array.from({length:25},(_,i)=>Math.random()<(difficulty==="Easy"?.12:difficulty==="Hard"?.24:.18)?i:-1).filter(i=>i>=0));setHealth(20);setRival(20);setTurn(0);setQuestion(0);setBoard(newBoard());setFlight(0);setJump(false);setArenaHealth(3);setTiles(Array.from({length:16},()=>["◆","●","▲","★"][Math.floor(Math.random()*4)]));setFirst(null);setBlock(4);setStage("playing");}
+function end(){setStage("results");}
+function move2048(d:string){setBoard(b=>{const n=slide(b,d);setScore(s=>s+Math.max(0,n.reduce((a,v)=>a+v,0)-b.reduce((a,v)=>a+v,0)));return n;});}
+function action(i?:number){if(stage!=="playing")return;if(game==="minesweeper"){if(mines.includes(i!)&&!revealed.includes(i!)){setMessage("Rug pull! Round over.");end();return;}if(!revealed.includes(i!)){setRevealed(v=>[...v,i!]);setScore(s=>s+10);}}
+if(game==="cards"){setRival(v=>Math.max(0,v-(difficulty==="Hard"?3:5)));setTurn(v=>v+1);setScore(s=>s+10);if(rival<=(difficulty==="Hard"?3:5))end();}
+if(game==="trivia"){if(i===questions[question].c)setScore(s=>s+20);if(question===questions.length-1)end();else setQuestion(v=>v+1);}
+if(game==="flappy"){if(flight%4===0)setScore(s=>s+10);else{setMessage("Collision! Round over.");end();}}
+if(game==="tetris"){setBlock(v=>(v+1)%10);setScore(s=>s+(block===9?30:5));}
+if(game==="arena"){if(i===0){setArenaHealth(v=>Math.max(0,v-1));setMessage("Bot hit!");if(arenaHealth<=1)end();}else setScore(s=>s+10);}
+if(game==="match3"){if(first===null){setFirst(i!);return;}const j=i!;if(j!==first&&Math.abs(j-first)!==4&&Math.floor(j/4)!==Math.floor(first/4)){setMessage("Swap tiles in the same row or column.");setFirst(null);return;}if(j!==first){setTiles(v=>{const n=[...v];[n[j],n[first!]]=[n[first!],n[j]];return n;});setScore(s=>s+15);}setFirst(null);}
+if(game==="runner"){if(!jump){setJump(true);setScore(s=>s+10);window.setTimeout(()=>setJump(false),450);}else setMessage("Land before jumping again.");}}
+async function saveScore(){setBusy(true);setMessage("");try{const sb=createClient();const {data,error}=await sb.rpc("submit_game_score",{p_game_key:info.backendKey,p_score:Math.min(2500,Math.max(0,score)),p_idempotency_key:runId||crypto.randomUUID()});if(error)throw error;const r=Array.isArray(data)?data[0]:data;if(!r?.success)throw new Error("Score could not be saved.");setGp(Number(r.gp_balance??gp));setWeeklyGp(Number(r.weekly_gp_earned??weeklyGp));setMessage(r.reason==="weekly_cap_reached"?`Saved. ${r.gp_awarded} GP awarded; weekly cap reached.`:`Saved! +${r.gp_awarded} GP added to your Game Points.`);}catch(e){setMessage(e instanceof Error?e.message:"Could not save this run.");}finally{setBusy(false);}}
+const progress=Math.min(100,weeklyGp/10000*100);
+return <div className="games-layout"><section className="games-hero"><div className="games-hero-copy"><p className="games-eyebrow">SPAT ARCADE / PLAYER ZONE</p><h1>Pick your game.<br/><span>Play for points.</span></h1><p>Nine arcade challenges. Earn Game Points (GP) within the shared 10,000 GP weekly cap.</p></div><div className="games-orbit" aria-hidden="true"><div className="games-orbit-ring ring-a"/><div className="games-orbit-ring ring-b"/><div className="games-orbit-core">ϟ</div></div></section>
+<section className="games-wallet-row"><article className="games-wallet-card"><span>YOUR GAME POINTS</span><strong>{gp.toLocaleString("en-US")} <small>GP</small></strong><p>GP balance only — no SP awarded here.</p></article><article className="games-wallet-card games-wallet-card--weekly"><div className="games-wallet-top"><span>WEEKLY GP CAP</span><b>{weeklyGp.toLocaleString("en-US")} / 10,000</b></div><div className="games-progress"><span style={{width:progress+"%"}}/></div><p>{Math.max(0,10000-weeklyGp).toLocaleString("en-US")} GP remaining this week</p></article></section>
+<section className="games-section"><div className="games-section-heading"><div><p className="games-eyebrow">CHOOSE YOUR CHALLENGE</p><h2>The arcade<span>.</span></h2></div><span className="games-live-tag"><i/> 9 GAMES</span></div><div className="games-select-grid games-select-grid--nine">{games.map((g,i)=><button key={g.id} className={"games-select-card "+(game===g.id?"selected":"")} onClick={()=>{setGame(g.id);setStage("instructions");setMessage("");}}><span className="games-select-number">{String(i+1).padStart(2,"0")}</span><span className="games-select-icon">{g.icon}</span><strong>{g.name}</strong><small>{g.tag}</small><span className="games-select-arrow">↗</span></button>)}</div></section>
+<section className={"games-play-panel games-game-modal "+game}><div className="games-play-head"><div><p className="games-eyebrow">{info.tag}</p><h2>{info.name}</h2><p>{info.description}</p></div>{stage!=="instructions"&&<div className="games-timer"><small>TIME LEFT</small><strong>00:{String(seconds).padStart(2,"0")}</strong></div>}</div>
+{stage==="instructions"&&<div className="games-instructions"><h3>Before you play</h3><p>{info.instructions}</p><label>DIFFICULTY</label><div className="games-difficulty">{(["Easy","Medium","Hard"] as Difficulty[]).map(d=><button key={d} className={difficulty===d?"active":""} onClick={()=>setDifficulty(d)}>{d}</button>)}</div><button className="games-start-button" onClick={begin}>Start game <span>→</span></button></div>}
+{stage==="playing"&&<div className="games-active">
+{game==="minesweeper"&&<div className="games-mine-grid">{Array.from({length:25},(_,i)=><button key={i} className={revealed.includes(i)?"revealed":""} onClick={()=>action(i)}>{revealed.includes(i)?"✦":"?"}</button>)}</div>}
+{game==="cards"&&<div className="games-battle"><div>YOU <strong>{health} HP</strong></div><span>VS</span><div>RIVAL <strong>{rival} HP</strong></div><button onClick={()=>action()}>Play attack card</button></div>}
+{game==="trivia"&&<div className="games-trivia"><small>QUESTION {question+1} / {questions.length}</small><h3>{questions[question].q}</h3>{questions[question].a.map((a,i)=><button key={a} onClick={()=>action(i)}>{a}</button>)}</div>}
+{game==="2048"&&<div className="games-2048"><div className="games-2048-board">{board.map((v,i)=><div key={i} className={v?"filled":""}>{v||""}</div>)}</div><div className="games-arrows">{["up","left","down","right"].map(d=><button key={d} onClick={()=>move2048(d)}>{({up:"↑",left:"←",down:"↓",right:"→"} as Record<string,string>)[d]}</button>)}</div></div>}
+{game==="flappy"&&<div className="games-flight"><div className="games-bird" style={{top:(25+(flight%3)*14)+"%"}}>◆</div><div className="games-pipes"/><p>Gap {flight+1}</p><button onClick={()=>action()}>FLAP ↑</button></div>}
+{game==="tetris"&&<div className="games-tetris"><div className="games-tetris-board">{Array.from({length:100},(_,i)=><span key={i} className={i%10===block?"on":""}/>)}</div><button onClick={()=>action()}>Move / drop block ↓</button></div>}
+{game==="arena"&&<div className="games-arena"><div className="games-arena-ring">ARENA <strong>{arenaHealth} ♥</strong><span>BOT {flight%3===0?"NEARBY":"IN RANGE"}</span></div><button onClick={()=>action(1)}>Collect energy +</button><button onClick={()=>action(0)}>Risk a fight ⚔</button></div>}
+{game==="match3"&&<div className="games-match-grid">{tiles.map((t,i)=><button key={i} className={first===i?"chosen":""} onClick={()=>action(i)}>{t}</button>)}</div>}
+{game==="runner"&&<div className="games-runner"><div className={"games-runner-player "+(jump?"jump":"")}>●</div><span className="games-obstacle" style={{right:(10+(flight%4)*15)+"%"}}>▰</span><p>Obstacle {flight+1}</p><button onClick={()=>action()}>JUMP ↑</button></div>}
+<div className="games-score-row"><div><small>YOUR SCORE</small><strong>{score.toLocaleString("en-US")}</strong></div><button className="games-start-button" onClick={end}>Finish round <span>→</span></button></div></div>}
+{stage==="results"&&<div className="games-finish games-results"><div><h3>Round complete</h3><p>Score: <strong>{score.toLocaleString("en-US")}</strong>. Submit to add GP to Game Points only.</p></div><button disabled={busy} onClick={saveScore}>{busy?"Saving…":"Save score & claim GP"} <span>→</span></button><button className="games-secondary-button" onClick={()=>setStage("instructions")}>Play again</button></div>}
+{message&&<p className="games-message" role="status">{message}</p>}<p className="games-integrity-note">Rewards are added to GP only, under the shared 10,000 GP weekly cap. Live PvP, persistent card collection, and a real weekly leaderboard require additional backend services.</p></section></div>;
 }
