@@ -3,10 +3,34 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+async function verifyTurnstile(formData: FormData, redirectPath: "/login" | "/signup") {
+  const token = String(formData.get("turnstile_token") ?? "");
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret || !token) redirect(`${redirectPath}?error=verification-required`);
+
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token }),
+      cache: "no-store"
+    });
+    const result = await response.json() as { success?: boolean; hostname?: string };
+    if (!result.success || (result.hostname && !["spat-platform.vercel.app", "spat-platform-eclipsera-lab.vercel.app", "spat-platform-git-main-eclipsera-lab.vercel.app"].includes(result.hostname))) {
+      redirect(`${redirectPath}?error=verification-failed`);
+    }
+  } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) throw error;
+    console.error("Turnstile verification request failed");
+    redirect(`${redirectPath}?error=verification-failed`);
+  }
+}
+
 export async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   if (!email || !password) redirect("/login?error=missing-fields");
+  await verifyTurnstile(formData, "/login");
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) redirect("/login?error=invalid-credentials");
@@ -18,6 +42,7 @@ export async function signUp(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const username = String(formData.get("username") ?? "").trim().toLowerCase();
   if (!email || password.length < 10 || !/^[a-z0-9_]{3,24}$/.test(username)) redirect("/signup?error=invalid-input");
+  await verifyTurnstile(formData, "/signup");
   const supabase = await createClient();
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://spat-platform.vercel.app").replace(/\/$/, "");
   const { data, error } = await supabase.auth.signUp({
