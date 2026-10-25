@@ -1,18 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-type GameId = "minesweeper" | "cards" | "trivia" | "2048" | "flappy" | "tetris" | "arena" | "match3" | "runner";
+type GameId = "minesweeper" | "trivia" | "2048" | "flappy" | "tetris" | "match3" | "runner";
 type Difficulty = "Easy" | "Medium" | "Hard";
 const games: {id:GameId;name:string;tag:string;description:string;icon:string;instructions:string;backendKey:string}[] = [
 {id:"minesweeper",name:"Minesweeper",tag:"AVOID THE RUG PULL",description:"Reveal safe tiles and avoid hidden rugs.",icon:"▦",instructions:"Reveal safe squares. A rug ends the round; every safe square earns points.",backendKey:"spat_blocks"},
-{id:"cards",name:"Card Battler",tag:"BUILD YOUR DECK",description:"Play attack cards against an arena rival.",icon:"♜",instructions:"Play cards to reduce the rival’s health before the timer ends. This version is a solo rival challenge, not live PvP.",backendKey:"spat_strike"},
 {id:"trivia",name:"Crypto Trivia",tag:"BEAT THE CLOCK",description:"Crypto knowledge, under pressure.",icon:"◈",instructions:"Answer each question before time runs out. Correct answers add to your score.",backendKey:"spat_bounce"},
 {id:"2048",name:"2048",tag:"MERGE THE NUMBERS",description:"Slide matching tiles to reach 2048.",icon:"2⁴",instructions:"Use arrow buttons or keyboard arrows. Matching tiles merge; reach 2048 for a bonus.",backendKey:"spat_blocks"},
 {id:"flappy",name:"Flappy Flight",tag:"TAP TO FLY",description:"Fly through gaps without hitting barriers.",icon:"↗",instructions:"Tap FLAP to fly through the gaps. A collision ends the round.",backendKey:"spat_bounce"},
 {id:"tetris",name:"Tetris Blocks",tag:"FIT THE BLOCKS",description:"Move falling blocks and clear rows.",icon:"▤",instructions:"Move the piece left/right and drop it. This compact arcade version focuses on placement and row-clear scoring.",backendKey:"spat_blocks"},
-{id:"arena",name:"Arena Royale",tag:"LAST ONE STANDING",description:"Survive a quick arena challenge.",icon:"⚔",instructions:"Collect energy and avoid bot attacks. This is a single-player prototype, not live multiplayer.",backendKey:"spat_strike"},
 {id:"match3",name:"Match-3",tag:"MATCH THE TILES",description:"Swap adjacent tiles to make matches.",icon:"◆",instructions:"Select two adjacent tiles. Matches of three or more score points.",backendKey:"spat_blocks"},
-{id:"runner",name:"Endless Runner",tag:"DODGE. SURVIVE. REPEAT.",description:"Jump over obstacles and chase your best score.",icon:"➜",instructions:"Tap JUMP to clear obstacles. Each successful dodge adds points. A live weekly leaderboard requires server-side leaderboard support.",backendKey:"spat_bounce"}
+{id:"runner",name:"Endless Runner",tag:"DODGE. SURVIVE. REPEAT.",description:"Jump over obstacles and chase your best score.",icon:"➜",instructions:"Jump over obstacles, survive as long as you can, and earn Game Points.",backendKey:"spat_bounce"}
 ];
 const questions = [
 {q:"What does DYOR mean?",a:["Do Your Own Research","Deposit Your Own Returns","Direct Yield On Reserve","Decentralized Yearly Operating Rate"],c:0},
@@ -36,11 +34,11 @@ function begin(){setScore(0);setSeconds(45);setMessage("");setRunId(crypto.rando
 function end(){setStage("results");}
 function move2048(d:string){setBoard(b=>{const n=slide(b,d);setScore(s=>s+Math.max(0,n.reduce((a,v)=>a+v,0)-b.reduce((a,v)=>a+v,0)));return n;});}
 function action(i?:number){if(stage!=="playing")return;if(game==="minesweeper"){if(mines.includes(i!)&&!revealed.includes(i!)){setMessage("Rug pull! Round over.");end();return;}if(!revealed.includes(i!)){setRevealed(v=>[...v,i!]);setScore(s=>s+10);}}
-if(game==="cards"){setRival(v=>Math.max(0,v-(difficulty==="Hard"?3:5)));setTurn(v=>v+1);setScore(s=>s+10);if(rival<=(difficulty==="Hard"?3:5))end();}
+
 if(game==="trivia"){if(i===questions[question].c)setScore(s=>s+20);if(question===questions.length-1)end();else setQuestion(v=>v+1);}
 if(game==="flappy"){if(flight%4===0)setScore(s=>s+10);else{setMessage("Collision! Round over.");end();}}
 if(game==="tetris"){setBlock(v=>(v+1)%10);setScore(s=>s+(block===9?30:5));}
-if(game==="arena"){if(i===0){setArenaHealth(v=>Math.max(0,v-1));setMessage("Bot hit!");if(arenaHealth<=1)end();}else setScore(s=>s+10);}
+
 if(game==="match3"){if(first===null){setFirst(i!);return;}const j=i!;if(j!==first&&Math.abs(j-first)!==4&&Math.floor(j/4)!==Math.floor(first/4)){setMessage("Swap tiles in the same row or column.");setFirst(null);return;}if(j!==first){setTiles(v=>{const n=[...v];[n[j],n[first!]]=[n[first!],n[j]];return n;});setScore(s=>s+15);}setFirst(null);}
 if(game==="runner"){if(!jump){setJump(true);setScore(s=>s+10);window.setTimeout(()=>setJump(false),450);}else setMessage("Land before jumping again.");}}
 async function saveScore(){setBusy(true);setMessage("");try{const sb=createClient();const {data,error}=await sb.rpc("submit_game_score",{p_game_key:info.backendKey,p_score:Math.min(2500,Math.max(0,score)),p_idempotency_key:runId||crypto.randomUUID()});if(error)throw error;const r=Array.isArray(data)?data[0]:data;if(!r?.success)throw new Error("Score could not be saved.");setGp(Number(r.gp_balance??gp));setWeeklyGp(Number(r.weekly_gp_earned??weeklyGp));setMessage(r.reason==="weekly_cap_reached"?`Saved. ${r.gp_awarded} GP awarded; weekly cap reached.`:`Saved! +${r.gp_awarded} GP added to your Game Points.`);}catch(e){setMessage(e instanceof Error?e.message:"Could not save this run.");}finally{setBusy(false);}}
@@ -52,12 +50,12 @@ return <div className="games-layout"><section className="games-hero"><div classN
 {stage==="instructions"&&<div className="games-instructions"><h3>Before you play</h3><p>{info.instructions}</p><label>DIFFICULTY</label><div className="games-difficulty">{(["Easy","Medium","Hard"] as Difficulty[]).map(d=><button key={d} className={difficulty===d?"active":""} onClick={()=>setDifficulty(d)}>{d}</button>)}</div><button className="games-start-button" onClick={begin}>Start game <span>→</span></button></div>}
 {stage==="playing"&&<div className="games-active">
 {game==="minesweeper"&&<div className="games-mine-grid">{Array.from({length:25},(_,i)=><button key={i} className={revealed.includes(i)?"revealed":""} onClick={()=>action(i)}>{revealed.includes(i)?"✦":"?"}</button>)}</div>}
-{game==="cards"&&<div className="games-battle"><div>YOU <strong>{health} HP</strong></div><span>VS</span><div>RIVAL <strong>{rival} HP</strong></div><button onClick={()=>action()}>Play attack card</button></div>}
+
 {game==="trivia"&&<div className="games-trivia"><small>QUESTION {question+1} / {questions.length}</small><h3>{questions[question].q}</h3>{questions[question].a.map((a,i)=><button key={a} onClick={()=>action(i)}>{a}</button>)}</div>}
 {game==="2048"&&<div className="games-2048"><div className="games-2048-board">{board.map((v,i)=><div key={i} className={v?"filled":""}>{v||""}</div>)}</div><div className="games-arrows">{["up","left","down","right"].map(d=><button key={d} onClick={()=>move2048(d)}>{({up:"↑",left:"←",down:"↓",right:"→"} as Record<string,string>)[d]}</button>)}</div></div>}
 {game==="flappy"&&<div className="games-flight"><div className="games-bird" style={{top:(25+(flight%3)*14)+"%"}}>◆</div><div className="games-pipes"/><p>Gap {flight+1}</p><button onClick={()=>action()}>FLAP ↑</button></div>}
 {game==="tetris"&&<div className="games-tetris"><div className="games-tetris-board">{Array.from({length:100},(_,i)=><span key={i} className={i%10===block?"on":""}/>)}</div><button onClick={()=>action()}>Move / drop block ↓</button></div>}
-{game==="arena"&&<div className="games-arena"><div className="games-arena-ring">ARENA <strong>{arenaHealth} ♥</strong><span>BOT {flight%3===0?"NEARBY":"IN RANGE"}</span></div><button onClick={()=>action(1)}>Collect energy +</button><button onClick={()=>action(0)}>Risk a fight ⚔</button></div>}
+
 {game==="match3"&&<div className="games-match-grid">{tiles.map((t,i)=><button key={i} className={first===i?"chosen":""} onClick={()=>action(i)}>{t}</button>)}</div>}
 {game==="runner"&&<div className="games-runner"><div className={"games-runner-player "+(jump?"jump":"")}>●</div><span className="games-obstacle" style={{right:(10+(flight%4)*15)+"%"}}>▰</span><p>Obstacle {flight+1}</p><button onClick={()=>action()}>JUMP ↑</button></div>}
 <div className="games-score-row"><div><small>YOUR SCORE</small><strong>{score.toLocaleString("en-US")}</strong></div><button className="games-start-button" onClick={end}>Finish round <span>→</span></button></div></div>}
