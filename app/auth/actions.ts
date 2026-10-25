@@ -16,7 +16,7 @@ async function verifyTurnstile(formData: FormData, redirectPath: "/login" | "/si
       cache: "no-store"
     });
     const result = await response.json() as { success?: boolean; hostname?: string };
-    if (!result.success || (result.hostname && !["spat-platform.vercel.app", "spat-platform-eclipsera-lab.vercel.app", "spat-platform-git-main-eclipsera-lab.vercel.app"].includes(result.hostname))) {
+    if (!result.success || !result.hostname || !["spat-platform.vercel.app", "spat-platform-eclipsera-lab.vercel.app", "spat-platform-git-main-eclipsera-lab.vercel.app"].includes(result.hostname)) {
       redirect(`${redirectPath}?error=verification-failed`);
     }
   } catch (error) {
