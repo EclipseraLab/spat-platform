@@ -2,10 +2,11 @@ import Link from "next/link";
 import { signIn } from "@/app/auth/actions";
 import AuthSubmitButton from "@/app/auth/auth-submit-button";
 import Turnstile from "@/app/auth/turnstile";
+import AuthSessionRedirect from "@/app/auth/auth-session-redirect";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  return <main className="auth-shell"><section className="auth-card">
+  return <main className="auth-shell"><AuthSessionRedirect /><section className="auth-card">
     <Link href="/" className="auth-brand">ϟ SPAT<span>.</span></Link>
     <p className="auth-eyebrow">WELCOME BACK</p><h1>Pick up your momentum.</h1>
     <p className="auth-copy">Sign in to return to your SPAT space.</p>
