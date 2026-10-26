@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { signIn } from "@/app/auth/actions";
 import AuthSubmitButton from "@/app/auth/auth-submit-button";
-import Turnstile from "@/app/auth/turnstile";
 import AuthSessionRedirect from "@/app/auth/auth-session-redirect";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -14,7 +13,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <form action={signIn} className="auth-form">
       <label>Email address<input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></label>
       <label>Password<input name="password" type="password" autoComplete="current-password" required placeholder="Your password" /></label>
-      <Turnstile />
       <AuthSubmitButton idleLabel="Sign in" pendingLabel="Signing you in…" />
     </form>
     <p className="auth-switch">New to SPAT? <Link href="/signup">Create an account</Link></p><Link className="auth-back" href="/">← Back to preview</Link>
