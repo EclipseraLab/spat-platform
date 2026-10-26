@@ -299,3 +299,96 @@ h1,h2,h3,p{margin-top:0}.welcome-row h1{font:600 clamp(24px,2.4vw,32px)/1.2 'Spa
 .games-game-modal .games-score-row{margin-top:18px;}
 @media(max-width:700px){.games-game-modal{width:92vw;height:88vh;padding:16px;border-radius:16px;}.games-select-grid--games{grid-template-columns:repeat(2,minmax(0,1fr));}.games-tetris-board{grid-template-columns:repeat(10,12px);}.games-tetris-board span{width:12px;height:12px;}.games-play-head{gap:12px;}.games-battle{padding:14px;}}
 @media(min-width:701px) and (max-width:1000px){.games-game-modal{width:88vw;height:85vh;}.games-select-grid--games{grid-template-columns:repeat(3,minmax(0,1fr));}}
+
+
+/* SPAT design-system pass: consistent spacing, focus, surfaces and mobile navigation. */
+:root{color-scheme:dark;scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:24px}
+body{background:#070b12;color:#edf3fb}
+a,button,input,select,textarea{ -webkit-tap-highlight-color:transparent}
+button,a,input,select,textarea{transition-property:color,background-color,border-color,box-shadow,transform,opacity;transition-duration:.16s}
+:focus-visible{outline:2px solid #80e6c8!important;outline-offset:3px!important}
+button:disabled{cursor:not-allowed;opacity:.58}
+.landing{background:radial-gradient(ellipse at 48% 0%,#11223a45,transparent 42%),#070a10}
+.landing-header{position:relative;z-index:5}
+.landing-section,.landing-principles,.landing-cta{scroll-margin-top:28px}
+.landing-feature,.landing-steps article,.landing-dashboard-card,.landing-float,.landing-principles-side>div{backdrop-filter:blur(12px)}
+.landing-feature:hover,.landing-steps article:hover{border-color:#5b9b8a;transform:translateY(-3px)}
+.landing-footer{gap:20px}
+.spat-workspace{background:radial-gradient(ellipse at 50% -15%,#10294a42,transparent 55%),#070b12}
+.spat-task-card,.spat-progress-card,.spat-social-summary,.spat-review-note,.spat-empty{box-shadow:0 14px 40px #0002}
+.spat-task-card{min-width:0}
+.spat-task-card h2,.spat-task-description,.spat-state-message{overflow-wrap:anywhere}
+.spat-proof-form input{min-width:0}
+.spat-app-nav a:focus-visible,.landing-nav a:focus-visible{outline-offset:2px}
+.dashboard-shell{display:block;min-height:100vh;padding:0 24px 42px;background:radial-gradient(ellipse at 50% -8%,#214b842e,transparent 48%),#080b12}
+.dashboard-card{width:min(100%,1180px);margin:0 auto;padding:0 clamp(20px,3vw,38px) 30px;border-radius:0 0 20px 20px;border-top:0;background:linear-gradient(145deg,#0d1522f5,#0a101af5);box-shadow:0 24px 80px #0004}
+.dashboard-header{min-height:82px;padding:15px 0;flex-wrap:wrap}
+.dashboard-app-nav{flex:1;justify-content:center}
+.dashboard-intro{padding:30px 0 8px}
+.dashboard-intro .auth-eyebrow{margin:0 0 10px}
+.dashboard-stats{gap:16px}
+.dashboard-stat{padding:22px}
+.dashboard-checkin{border:1px solid #2a455a;background:radial-gradient(ellipse at 100% 0%,#173c4140,transparent 60%),linear-gradient(130deg,#101d2b,#0c131e)}
+.dashboard-footer{flex-wrap:wrap}
+.auth-shell{background:radial-gradient(ellipse at 50% 0%,#173d6a30,transparent 50%),#080b12}
+.auth-card{box-shadow:0 28px 90px #0005}
+.auth-form input:focus{border-color:#5f9fff;box-shadow:0 0 0 3px #5797ff1c;outline:none}
+.games-shell{background:radial-gradient(ellipse at 50% -10%,#18365c22,transparent 48%),#080b12}
+.games-select-card{min-width:0}
+.games-select-card:focus-visible,.games-difficulty button:focus-visible{outline-offset:3px}
+.games-play-panel{box-shadow:0 20px 70px #0003}
+.games-game-modal{overscroll-behavior:contain}
+.games-game-modal .games-active{min-height:50vh}
+.games-tetris-controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.games-tetris-controls button{min-width:58px}
+.games-flight .games-bird,.games-runner-player{z-index:2}
+.games-flight button,.games-runner button{position:relative}
+@media(max-width:900px){
+ .landing-header{padding:0 22px}
+ .landing-nav{gap:16px}
+ .dashboard-shell{padding:0 12px 28px}
+ .dashboard-card{padding-inline:22px}
+ .dashboard-header{gap:12px}
+ .dashboard-app-nav{order:3;flex-basis:100%;justify-content:flex-start;overflow-x:auto;padding:2px 0 6px}
+ .dashboard-app-nav a{flex:0 0 auto}
+}
+@media(max-width:650px){
+ .landing-header{height:auto;min-height:76px;padding:14px 16px;flex-wrap:wrap;gap:14px}
+ .landing-brand{font-size:19px}
+ .landing-brand-mark{width:33px;height:33px}
+ .landing-nav{order:3;width:100%;overflow-x:auto;gap:20px;padding:4px 0 7px;white-space:nowrap}
+ .landing-nav a{font-size:11px}
+ .landing-actions{margin-left:auto;gap:12px}
+ .landing-button-small{min-height:36px;padding:0 11px}
+ .landing-hero{padding:52px 22px 35px;grid-template-columns:1fr;gap:28px;min-height:0}
+ .landing-visual{min-height:410px;transform:scale(.94);transform-origin:top center;margin-bottom:-20px}
+ .landing-hero-index{gap:12px;flex-wrap:wrap;font-size:8px}
+ .landing-strip{padding:16px 18px;gap:12px;flex-wrap:wrap}
+ .landing-strip>i{display:none}
+ .landing-section{padding:58px 20px}
+ .landing-section-heading{align-items:flex-start;flex-direction:column;gap:12px}
+ .landing-activity-grid,.landing-steps{grid-template-columns:1fr}
+ .landing-principles{margin:0 18px;padding:25px;grid-template-columns:1fr;gap:18px}
+ .landing-cta{padding:68px 20px}
+ .landing-footer{padding:25px 20px;grid-template-columns:1fr;display:grid}
+ .landing-footer>div{flex-wrap:wrap;gap:18px}
+ .dashboard-shell{padding:0 8px 20px}
+ .dashboard-card{padding:0 15px 24px;border-radius:0 0 16px 16px}
+ .dashboard-header{align-items:flex-start}
+ .dashboard-live{margin-left:auto}
+ .dashboard-intro{padding-top:25px}
+ .dashboard-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .dashboard-stat{padding:15px 12px}
+ .dashboard-stat--lifetime{grid-column:span 2}
+ .dashboard-footer{gap:12px}
+ .games-game-modal{width:96vw;height:90dvh;max-height:90dvh;padding:13px;border-radius:14px}
+ .games-game-modal .games-active{min-height:0;gap:14px}
+ .games-mine-grid,.games-match-grid{gap:5px}
+ .games-mine-grid button,.games-match-grid button{border-radius:7px}
+ .games-tetris-board{width:min(78vw,300px)!important;height:min(62dvh,500px)!important}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
