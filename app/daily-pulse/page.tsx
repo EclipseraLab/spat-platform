@@ -38,7 +38,7 @@ export default async function DailyPulsePage({ searchParams }: QuizPageProps) {
   const resultTone = params.result === "correct" ? "success" : params.result ? "notice" : "";
 
   return <main className="auth-shell"><section className="auth-card pulse-card">
-    <Link href="/" className="auth-brand">ϟ SPAT<span>.</span></Link>
+    <header className="pulse-appbar"><Link href="/" className="auth-brand">ϟ SPAT<span>.</span></Link><nav aria-label="Main navigation"><Link href="/dashboard">Overview</Link><Link href="/games">Games</Link><Link href="/missions">Missions</Link><Link className="current" href="/daily-pulse">Daily Pulse</Link><Link href="/social-tasks">Social tasks</Link></nav></header>
     <p className="auth-eyebrow">DAILY PULSE · WEEKLY CRYPTO QUIZ</p>
     <h1>Your crypto pulse.</h1>
     <p className="auth-copy">Answer five crypto questions assigned for your account this week. Correct answers earn 10 SP each; each question can be answered once.</p>
