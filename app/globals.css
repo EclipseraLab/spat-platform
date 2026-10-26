@@ -392,3 +392,15 @@ button:disabled{cursor:not-allowed;opacity:.58}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+.pulse-card{width:min(100%,980px);padding:clamp(20px,3vw,34px)}
+.pulse-appbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:20px;margin-bottom:8px;border-bottom:1px solid #202b3d}
+.pulse-appbar .auth-brand{font-size:21px;white-space:nowrap}
+.pulse-appbar nav{display:flex;align-items:center;gap:5px;overflow-x:auto}
+.pulse-appbar nav a{padding:9px 11px;border:1px solid transparent;border-radius:8px;color:#8e9db1;text-decoration:none;font-size:11px;white-space:nowrap}
+.pulse-appbar nav a:hover{background:#111b29;color:#edf5ff}
+.pulse-appbar nav a.current{color:#a8f1db;background:#122721;border-color:#285348}
+.pulse-card>.auth-eyebrow{margin-top:25px}
+.pulse-card .dashboard-link{display:inline-block;margin:14px 12px 0 0}
+.pulse-card>form{display:inline-block;margin-top:14px}
+@media(max-width:700px){.pulse-appbar{align-items:flex-start;flex-direction:column;gap:13px}.pulse-appbar nav{width:100%;padding-bottom:4px}.pulse-card{padding:18px}.pulse-question{padding:13px}.pulse-options button{width:100%}}
