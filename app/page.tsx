@@ -79,7 +79,7 @@ export default function Home() {
       <section className="landing-section landing-activities" id="activities">
         <div className="landing-section-heading"><div><div className="landing-eyebrow">YOUR SPAT ROUTINE</div><h2>Different ways to <span>move forward.</span></h2></div><p>Start with one activity. Build from there. New opportunities can be introduced as SPAT develops.</p></div>
         <div className="landing-activity-grid">{activities.map((item) => { const Icon = item.icon; return <article key={item.number} className="landing-feature"><div className="landing-feature-top"><span className="landing-feature-icon"><Icon size={20}/></span><span>{item.number} / 04</span></div><h3>{item.title}</h3><p>{item.copy}</p><div className="landing-feature-foot"><span>{item.reward}</span><ArrowUpRight size={16}/></div></article>; })}</div>
-        <div className="landing-game-note"><span className="landing-game-icon"><Gamepad2 size={19}/></span><span><b>SPAT Arcade is open.</b><small>Play SPAT Blocks, SPAT Bounce, and SPAT Strike to build your Game Points.</small></span><Link className="landing-roadmap-tag" href="/games">PLAY GAMES ↗</Link></div>
+        <div className="landing-game-note"><span className="landing-game-icon"><Gamepad2 size={19}/></span><span><b>SPAT Arcade is open.</b><small>Play arcade challenges including Minesweeper, 2048, Crypto Trivia and more to build your Game Points.</small></span><Link className="landing-roadmap-tag" href="/games">PLAY GAMES ↗</Link></div>
       </section>
 
       <section className="landing-principles" id="principles">
