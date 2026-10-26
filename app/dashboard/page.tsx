@@ -42,7 +42,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     <section className="dashboard-card" aria-labelledby="dashboard-title">
       <header className="dashboard-header">
         <Link href="/" className="auth-brand">ϟ SPAT<span>.</span></Link>
-        <span className="dashboard-live"><i /> MEMBER SPACE</span>
+        <nav className="spat-app-nav dashboard-app-nav" aria-label="Main navigation"><Link className="is-current" href="/dashboard">Overview</Link><Link href="/games">Games</Link><Link href="/missions">Missions</Link><Link href="/daily-pulse">Daily Pulse</Link><Link href="/social-tasks">Social tasks</Link></nav><span className="dashboard-live"><i /> MEMBER SPACE</span>
       </header>
 
       <div className="dashboard-intro">
