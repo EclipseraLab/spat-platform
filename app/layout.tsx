@@ -1,23 +1,34 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const title = "SPAT — Show up. Stack points.";
+const description = "A Web3 participation platform for community missions, crypto knowledge, daily check-ins, and arcade challenges.";
+
 export const metadata: Metadata = {
-  title: "SPAT — Show up. Stack points.",
-  description: "A daily Web3 participation platform for crypto challenges, missions, and community progress.",
+  title,
+  description,
   applicationName: "SPAT",
-  icons: { icon: [{ url: "/favicon.svg?v=3", type: "image/svg+xml" }], shortcut: "/favicon.svg?v=3", apple: "/favicon.svg?v=3" },
+  icons: {
+    icon: [
+      { url: "/favicon.svg?v=4", type: "image/svg+xml", sizes: "any" },
+      { url: "/favicon.svg?v=4", type: "image/svg+xml", sizes: "512x512" }
+    ],
+    shortcut: "/favicon.svg?v=4",
+    apple: [{ url: "/favicon.svg?v=4", sizes: "180x180", type: "image/svg+xml" }]
+  },
   openGraph: {
-    title: "SPAT — Show up. Stack points.",
-    description: "Take on crypto challenges, complete missions, and build your daily Web3 routine.",
+    title,
+    description,
     type: "website",
     siteName: "SPAT",
-    images: [{ url: "/favicon.svg?v=3", width: 512, height: 512, alt: "SPAT" }]
+    url: "https://spat-platform.vercel.app"
   },
   twitter: {
-    card: "summary_large_image",
-    title: "SPAT — Show up. Stack points.",
-    description: "Take on crypto challenges, complete missions, and build your daily Web3 routine."
-  }
+    card: "summary",
+    title,
+    description
+  },
+  metadataBase: new URL("https://spat-platform.vercel.app")
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
