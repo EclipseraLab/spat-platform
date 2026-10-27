@@ -2,8 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/auth/actions";
-import { reviewSocialSubmission, saveSocialTask } from "@/app/admin/actions";
-import { saveMission } from "@/app/admin/quests/actions";
+import { reviewSocialSubmission, saveSocialTask, deleteSocialTask } from "@/app/admin/actions";
+import { saveMission, deleteMission } from "@/app/admin/quests/actions";
 
 type Mission = { id: string; title: string; description: string; reward_sp: number; active: boolean; created_at: string };
 type Task = { id: string; title: string; description: string; reward_sp: number; active: boolean; created_at: string };
