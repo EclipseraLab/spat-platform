@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import HomeSessionGuard from "@/app/auth/home-session-guard";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowRight, ArrowUpRight, Activity, BrainCircuit, Flame, Gamepad2, ShieldCheck, Sparkles, Target, Trophy, WalletCards, Zap } from "lucide-react";
 
@@ -15,7 +16,7 @@ export default async function Home() {
   const { data: { user } } = await supabase.auth.getUser();
   if (user) redirect("/dashboard");
 
-  return <main className="spat-home">
+  return <main className="spat-home"><HomeSessionGuard />
     <div className="spat-home-noise" aria-hidden="true" />
     <header className="spat-home-header">
       <Link href="/" className="spat-home-brand" aria-label="SPAT home"><span className="spat-home-mark">S</span><span>SPAT<span className="spat-home-period">.</span><small>PARTICIPATION PROTOCOL</small></span></Link>
