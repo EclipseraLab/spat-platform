@@ -18,10 +18,11 @@ export async function saveSocialTask(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const reward = Number(formData.get("reward_sp"));
   const active = formData.get("active") === "on";
-  if (!/^[a-z0-9_]{3,40}$/.test(id) || title.length < 2 || title.length > 120 || description.length > 2000 || !Number.isInteger(reward) || reward < 1 || reward > 10000) redirect("/admin?tab=tasks&result=invalid");
+  const destinationUrl = String(formData.get("destination_url") ?? "").trim();
+  if (!/^[a-z0-9_]{3,40}$/.test(id) || title.length < 2 || title.length > 120 || description.length > 2000 || (destinationUrl && !/^https:\/\//i.test(destinationUrl)) || !Number.isInteger(reward) || reward < 1 || reward > 10000) redirect("/admin?tab=tasks&result=invalid");
   const supabase = await requireAdmin("admin");
   const { error } = await supabase.rpc("spat_admin_upsert_social_task", {
-    p_id: id, p_title: title, p_description: description, p_reward_sp: reward, p_active: active
+    p_id: id, p_title: title, p_description: description, p_reward_sp: reward, p_active: active, p_destination_url: destinationUrl
   });
   if (error) {
     console.error("Admin social task save failed:", error.message);
@@ -30,6 +31,19 @@ export async function saveSocialTask(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/social-tasks");
   redirect("/admin?tab=tasks&result=saved");
+}
+
+export async function deleteSocialTask(formData: FormData) {
+  const id = String(formData.get("id") ?? "").trim().toLowerCase();
+  if (!/^[a-z0-9_]{3,40}$/.test(id)) redirect("/admin?tab=tasks&result=invalid");
+  const supabase = await requireAdmin("admin");
+  const { error } = await supabase.rpc("spat_admin_delete_social_task", { p_id: id });
+  if (error) {
+    console.error("Admin social task delete failed:", error.message);
+    redirect("/admin?tab=tasks&result=" + (error.message.includes("task_has_submissions") ? "delete_blocked" : "error"));
+  }
+  revalidatePath("/admin"); revalidatePath("/social-tasks");
+  redirect("/admin?tab=tasks&result=deleted");
 }
 
 export async function reviewSocialSubmission(formData: FormData) {
