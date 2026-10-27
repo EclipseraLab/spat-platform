@@ -118,6 +118,23 @@ export async function claimDailyMission(formData: FormData) {
   redirect("/missions?result=" + String(result?.reason ?? "error"));
 }
 
+export async function saveXProfile(formData: FormData) {
+  const profileUrl = String(formData.get("x_profile_url") ?? "").trim();
+  let parsed: URL;
+  try { parsed = new URL(profileUrl); } catch { redirect("/social-tasks?result=invalid_profile"); }
+  const host = parsed.hostname.toLowerCase();
+  const handle = parsed.pathname.split("/").filter(Boolean)[0] ?? "";
+  if (parsed.protocol !== "https:" || !["x.com","www.x.com","twitter.com","www.twitter.com"].includes(host) || !/^[A-Za-z0-9_]{1,15}$/.test(handle)) redirect("/social-tasks?result=invalid_profile");
+  const supabase = await createClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) redirect("/login?next=/social-tasks");
+  if (user.user_metadata?.x_profile_url) redirect("/social-tasks?result=profile_already_saved");
+  const { error } = await supabase.auth.updateUser({ data: { x_profile_url: "https://x.com/" + handle } });
+  if (error) redirect("/social-tasks?result=profile_save_error");
+  revalidatePath("/social-tasks");
+  redirect("/social-tasks?result=profile_saved");
+}
+
 export async function submitSocialTask(formData: FormData) {
   const taskId = String(formData.get("task_id") ?? "");
   const proofUrl = String(formData.get("proof_url") ?? "").trim();
