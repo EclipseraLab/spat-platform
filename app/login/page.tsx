@@ -3,14 +3,15 @@ import { signIn } from "@/app/auth/actions";
 import AuthSubmitButton from "@/app/auth/auth-submit-button";
 import AuthSessionRedirect from "@/app/auth/auth-session-redirect";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
+  const { error, next } = await searchParams;
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
   return <main className="auth-shell"><AuthSessionRedirect /><section className="auth-card">
     <Link href="/" className="auth-brand">ϟ SPAT<span>.</span></Link>
     <p className="auth-eyebrow">WELCOME BACK</p><h1>Pick up your momentum.</h1>
     <p className="auth-copy">Sign in to return to your SPAT space.</p>
     {error && <p className="auth-error" role="alert">{error === "missing-fields" ? "Enter your email and password." : error.startsWith("verification-") ? "Complete the security check and try again." : "We couldn't sign you in. Check your details and try again."}</p>}
-    <form action={signIn} className="auth-form">
+    <form action={signIn} className="auth-form"><input type="hidden" name="next" value={safeNext} />
       <label>Email address<input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></label>
       <label>Password<input name="password" type="password" autoComplete="current-password" required placeholder="Your password" /></label>
       <AuthSubmitButton idleLabel="Sign in" pendingLabel="Signing you in…" />
