@@ -137,13 +137,17 @@ export async function saveXProfile(formData: FormData) {
 
 export async function submitSocialTask(formData: FormData) {
   const taskId = String(formData.get("task_id") ?? "");
-  const proofUrl = String(formData.get("proof_url") ?? "").trim();
-  if (!/^[a-z0-9_]{3,40}$/.test(taskId) || !/^https?:\/\//i.test(proofUrl) || proofUrl.length > 2048) {
-    redirect("/social-tasks?result=invalid_url");
-  }
+  let proofUrl = String(formData.get("proof_url") ?? "").trim();
+  if (!/^[a-z0-9_]{3,40}$/.test(taskId)) redirect("/social-tasks?result=invalid_task");
+  const isTweetCampaign = taskId.startsWith("tweet_");
+  if (isTweetCampaign && (!/^https:\/\/(www\.)?(x\.com|twitter\.com)\//i.test(proofUrl) || proofUrl.length > 2048)) redirect("/social-tasks?result=invalid_url");
+  if (!isTweetCampaign && proofUrl) redirect("/social-tasks?result=invalid_url");
   const supabase = await createClient();
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) redirect("/login?next=/social-tasks");
+  const xProfileUrl = user.user_metadata?.x_profile_url;
+  if (typeof xProfileUrl !== "string" || !xProfileUrl) redirect("/social-tasks?result=profile_required");
+  if (!isTweetCampaign) proofUrl = xProfileUrl;
   const { data, error } = await supabase.rpc("submit_social_task", {
     p_task_id: taskId,
     p_proof_url: proofUrl
