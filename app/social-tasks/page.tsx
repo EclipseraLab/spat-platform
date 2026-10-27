@@ -14,14 +14,20 @@ export default async function SocialTasksPage({ searchParams }: { searchParams: 
   const payload = Array.isArray(data) ? data[0] : data;
   const tasks: SocialTask[] = payload && Array.isArray(payload.tasks) ? payload.tasks : [];
   const messages: Record<string, string> = {
-    submitted: "Task submitted. Your reward stays pending until a reviewer approves it.",\n    profile_saved: "Your X profile is saved. You only need to do this once.",\n    profile_already_saved: "Your X profile is already registered.",\n    profile_required: "Register your X profile before participating in social tasks.",\n    invalid_profile: "Enter a valid X profile URL, such as https://x.com/yourhandle.",\n    profile_save_error: "We could not save your X profile. Please try again.",
+    submitted: "Task submitted. Your reward stays pending until a reviewer approves it.",
+    profile_saved: "Your X profile is saved. You only need to do this once.",
+    profile_already_saved: "Your X profile is already registered.",
+    profile_required: "Register your X profile before participating in social tasks.",
+    invalid_profile: "Enter a valid X profile URL, such as https://x.com/yourhandle.",
+    profile_save_error: "We could not save your X profile. Please try again.",
     already_submitted: "You've already submitted proof for this task.",
     invalid_url: "Enter a valid public URL beginning with https:// or http://.",
     invalid_task: "That task is not available.",
     error: "We couldn't submit your proof. Please try again."
   };
   const pending = tasks.filter(task => task.submission_status === "pending").length;
-  const approved = tasks.filter(task => task.submission_status === "approved").length;\n  const xProfileUrl = typeof user.user_metadata?.x_profile_url === "string" ? user.user_metadata.x_profile_url : "";
+  const approved = tasks.filter(task => task.submission_status === "approved").length;
+  const xProfileUrl = typeof user.user_metadata?.x_profile_url === "string" ? user.user_metadata.x_profile_url : "";
   return <main className="spat-workspace">\n    <style>{"\n      .spat-x-profile-card{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;align-items:center;border:1px solid #263d5b;border-radius:16px;padding:26px;background:radial-gradient(ellipse at 100% 0%,#1b3654 0,transparent 56%),linear-gradient(135deg,#111d2d,#0b111b);margin:20px 0 25px;box-shadow:0 15px 45px #0002}\n      .spat-x-profile-card h2{font-size:22px;letter-spacing:-.5px;margin:10px 0}.spat-x-profile-card h2 span{color:#77a9ff}.spat-x-profile-card p:not(.spat-eyebrow){font-size:12px;color:#91a3bc;line-height:1.7;margin:0;max-width:450px}\n      .spat-x-profile-form{display:grid;gap:10px}.spat-x-profile-form label{font:10px monospace;letter-spacing:1px;color:#94a9c7}.spat-x-profile-form input{width:100%;min-width:0;border:1px solid #2a4261;border-radius:9px;padding:13px;background:#080f19;color:#edf4ff;font:12px inherit}.spat-x-profile-form input:focus{outline:2px solid #4e8cff;outline-offset:2px}\n      .spat-x-profile-saved{display:flex;align-items:center;gap:12px;border:1px solid #214b40;background:linear-gradient(100deg,#102a26,#0d171d);border-radius:12px;padding:14px 17px;margin:20px 0 24px}.spat-x-profile-saved>span:first-child{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#1a4437;color:#7de0b0}.spat-x-profile-saved div{min-width:0;display:grid;gap:4px}.spat-x-profile-saved strong{font-size:12px;color:#dff9eb}.spat-x-profile-saved small{font-size:11px;color:#88b9a5;overflow-wrap:anywhere}.spat-profile-lock{margin-left:auto;color:#7fdcb0;font:10px monospace;letter-spacing:1px}\n      .spat-task-card{transition:transform .18s,border-color .18s,box-shadow .18s}.spat-task-card:hover{transform:translateY(-3px);border-color:#385b86;box-shadow:0 15px 35px #0003}\n      @media(max-width:680px){.spat-x-profile-card{grid-template-columns:1fr;padding:19px;gap:18px}}\n"}</style>
     <div className="spat-workspace-glow" aria-hidden="true" />
     <section className="spat-workspace-inner">
