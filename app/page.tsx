@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import {
   ArrowDownRight, ArrowRight, ArrowUpRight, BadgeCheck, BrainCircuit,
   CheckCircle2, CircleDollarSign, Flame, Gamepad2, Menu, ShieldCheck,
@@ -12,7 +14,10 @@ const activities = [
   { number: "04", icon: Trophy, title: "Weekly League", copy: "Track your progress and compete with the community.", reward: "Competition" }
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) redirect("/dashboard");
   return (
     <main className="landing">
       <header className="landing-header">
