@@ -9,9 +9,9 @@ export const metadata: Metadata = {
   description,
   applicationName: "SPAT",
   icons: {
-    icon: [{ url: "/icon.svg?v=5", type: "image/svg+xml" }],
-    shortcut: "/icon.svg?v=5",
-    apple: [{ url: "/icon.svg?v=5", type: "image/svg+xml" }]
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: "/icon.svg",
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }]
   },
   openGraph: {
     title,
