@@ -17,7 +17,7 @@ export default async function MissionsPage({ searchParams }: { searchParams: Pro
     <div className="spat-workspace-glow" aria-hidden="true" />
     <section className="spat-workspace-inner">
       <header className="spat-appbar">
-        <Link href="/" className="spat-app-brand"><span className="spat-brand-symbol">ϟ</span><span>SPAT<span className="spat-brand-dot">.</span><small>PARTICIPATION PROTOCOL</small></span></Link>
+        <Link href="/dashboard" className="spat-app-brand"><span className="spat-brand-symbol">ϟ</span><span>SPAT<span className="spat-brand-dot">.</span><small>PARTICIPATION PROTOCOL</small></span></Link>
         <nav className="spat-app-nav" aria-label="Main navigation"><Link href="/dashboard">Overview</Link><Link className="is-current" href="/missions">Missions</Link><Link href="/daily-pulse">Daily Pulse</Link><Link href="/social-tasks">Social tasks</Link></nav>
         <form action={signOut}><button className="spat-signout" type="submit">Sign out <span>↗</span></button></form>
       </header>
