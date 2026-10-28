@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function AuthSessionRedirect() {
+export default function AuthSessionRedirect({ next = "/dashboard" }: { next?: string }) {
   const router = useRouter();
 
   useEffect(() => {
@@ -13,7 +13,7 @@ export default function AuthSessionRedirect() {
 
     const redirectIfSignedIn = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (active && user) router.replace("/dashboard");
+      if (active && user) router.replace(next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard");
     };
 
     void redirectIfSignedIn();
@@ -29,7 +29,7 @@ export default function AuthSessionRedirect() {
       active = false;
       window.removeEventListener("pageshow", onPageShow);
     };
-  }, [router]);
+  }, [router, next]);
 
   return null;
 }
